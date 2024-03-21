@@ -3,6 +3,7 @@
 import os
 import time
 import RPi.GPIO as GPIO
+import boto3
 
 # Set up GPIO mode
 GPIO.setmode(GPIO.BCM)
@@ -12,6 +13,10 @@ SENSOR_PIN = 18
 
 # Set up sensor pin
 GPIO.setup(SENSOR_PIN, GPIO.IN)
+
+# S3 bucket configuration
+bucket_name = "t5jonjembre"
+s3_client = boto3.client('s3')
 
 # Function to check if the img folder exists and create it if not
 def ensure_img_folder_exists():
@@ -25,6 +30,14 @@ def get_next_image_filename():
     filename = f"/home/pi/T5_Jonjembre/img/{current_time}.jpg"
     return filename
 
+# Function to upload image to S3
+def upload_image_to_s3(image_filename):
+    try:
+        with open(image_filename, 'rb') as f:
+            s3_client.upload_fileobj(f, bucket_name, f"captured_images/{os.path.basename(image_filename)}")
+    except Exception as e:
+        print(f"Failed to upload image '{image_filename}' to S3 bucket '{bucket_name}': {e}")
+
 # Read voltage of GPIO18 and capture image if voltage is 1
 try:
     while True:
@@ -34,6 +47,8 @@ try:
             ensure_img_folder_exists()
             next_image_filename = get_next_image_filename()
             os.system(f"libcamera-jpeg -n -o {next_image_filename} > /dev/null 2>&1")
+            upload_image_to_s3(next_image_filename)
+            os.remove(next_image_filename)  # Remove local image after upload to save space
 
         time.sleep(0.5)  # Sleep for 0.5 seconds (half a second)
 except KeyboardInterrupt:
