@@ -1,11 +1,11 @@
-Description
+Description:
 This repository contains the files used for my project for school, in combination with a RPi.
 
-Contents
+Contents:
 Scripts: Contains the Python scripts used in the project.
 Documentation: Includes any relevant documentation or notes about the project.
 
-Getting Started
+Getting Started:
 To get started with this project, follow these steps:
 
 Clone this repository to your Raspberry Pi (or other devices):
