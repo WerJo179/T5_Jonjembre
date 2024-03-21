@@ -13,6 +13,12 @@ SENSOR_PIN = 18
 # Set up sensor pin
 GPIO.setup(SENSOR_PIN, GPIO.IN)
 
+# Function to check if the img folder exists and create it if not
+def ensure_img_folder_exists():
+    img_folder = "/home/pi/T5_Jonjembre/img"
+    if not os.path.exists(img_folder):
+        os.makedirs(img_folder)
+
 # Function to get the image file name with timestamp
 def get_next_image_filename():
     current_time = time.strftime("%d-%m-%Y-%H:%M:%S")
