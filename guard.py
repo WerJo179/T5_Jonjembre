@@ -31,6 +31,7 @@ try:
         voltage = GPIO.input(SENSOR_PIN)
         
         if voltage == 1:
+            ensure_img_folder_exists()
             next_image_filename = get_next_image_filename()
             os.system(f"libcamera-jpeg -n -o {next_image_filename} > /dev/null 2>&1")
 
