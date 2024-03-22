@@ -49,18 +49,23 @@ def upload_image_to_s3(image_filename):
     except Exception as e:
         print(f"Failed to upload image '{image_filename}' to S3 bucket '{bucket_name}/captured_images': {e}")
 
+# Function to upload the entry log text file to S3
+def upload_entry_log_to_s3(log_filename):
+    try:
+        mime_type = 'text/plain'
+        extra_args = {'ContentType': mime_type}
+        s3_client.upload_file(log_filename, bucket_name, "logs/entry.txt", ExtraArgs=extra_args)
+        print(f"Entry log file '{log_filename}' uploaded to S3 bucket '{bucket_name}/logs' successfully.")
+    except Exception as e:
+        print(f"Failed to upload entry log file '{log_filename}' to S3 bucket '{bucket_name}/logs': {e}")
+
 # Function to log door activity
 def log_door_activity(activity):
     ensure_log_file_exists()  # Ensure log file exists
     entry_log = f"{activity}: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
     with open("/home/pi/T5_Jonjembre/entry.txt", "a") as f:
         f.write(entry_log)
-    # Upload log file to S3
-    try:
-        s3_client.upload_file("/home/pi/T5_Jonjembre/entry.txt", bucket_name, "logs/entry.txt")
-        print(f"Log file 'entry.txt' uploaded to S3 bucket '{bucket_name}/logs' successfully.")
-    except Exception as e:
-        print(f"Failed to upload log file 'entry.txt' to S3 bucket '{bucket_name}/logs': {e}")
+    upload_entry_log_to_s3("/home/pi/T5_Jonjembre/entry.txt")  # Upload log file to S3
 
 # Function to ensure log file exists
 def ensure_log_file_exists():
