@@ -18,26 +18,8 @@
 # This should be on per default and you don't need to worry if you haven't
 # specifically changed anything.
 
-# [Packages]
-# You'll first need to run these commands on your Raspberry Pi terminal:#
-sudo apt update && sudo apt upgrade -y
-sudo apt install libcamera-utils -y
-sudo apt install python3 -y
-sudo apt install python3-dev python3-pip python3-venv -y
-sudo apt install git -y
-
-sudo pip3 install adafruit-circuitpython-dht -y
-sudo pip3 install RPi.GPIO -y
-sudo pip3 install spidev -y
-sudo pip3 install mfrc522 -y
-sudo pip3 install boto3 -y
-
-# After running these commands, you should have every package/library
-# installed which you'll need.
-
 # [Configuration]
-# You will now have to do some configuration of your system to finalize the setup and
-# lastly get the script files from our GitHub Repository.
+# You will first have to do some configuration of your system.
 
 # Run these commands in your terminal:
 echo "break-system-packages = true" >> /etc/pip.conf
@@ -49,7 +31,7 @@ echo "aws_access_key_id = YOUR_ACCESS_KEY_ID" >> ~/.aws/credentials # Replace YO
 echo "aws_secret_access_key = YOUR_SECRET_ACCESS_KEY" >> ~/.aws/credentials # Replace YOUR_SECRET_ACCESS_KEY with your AWS access secret key
 
 # [Scripts]
-# Now, you'll only have to clone our GitHub repository and edit your crontab to automatically run the scripts:
+# Now, you'll have to clone our GitHub repository and edit your crontab to automatically run the scripts:
 
 cd ~
 git clone https://github.com/WerJo179/T5_Jonjembre
@@ -62,6 +44,15 @@ crontab -e
 @reboot python3 ~/T5_Jonjembre/DHT.py &
 
 # These will make the PI run the scripts in background upon booting.
+
+# [Packages]
+# Run these commands to install all required dependencies:
+cd ~/T5_Jonjembre
+chmod +x install_dependencies.sh
+./install_dependencies.sh
+
+# After running these commands, you should have every package/library installed which you'll need.
+
 # Lastly, you'll need to restart your Pi with this command and you can test if the scripts work:
 sudo reboot now
 
