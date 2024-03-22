@@ -4,10 +4,11 @@
 import time
 import board
 import adafruit_dht
+import boto3
 
 # Initial the dht device, with data pin connected to:
 dhtDevice = adafruit_dht.DHT22(board.D4)
-
+cloudwatch = boto3.client('cloudwatch', region_name='us-east-1')
 # you can pass DHT22 use_pulseio=False if you wouldn't like to use pulseio.
 # This may be necessary on a Linux single board computer like the Raspberry Pi,
 # but it will not work in CircuitPython.
@@ -23,6 +24,47 @@ while True:
             "Temp: {:.1f} F / {:.1f} C    Humidity: {}% ".format(
                 temperature_f, temperature_c, humidity
             )
+        )
+        cloudwatch.put_metric_data(
+            Namespace='T5_JerJon_Cabinet',
+            MetricData=[
+                {
+                    'MetricName': 'Temperature',
+                    'Dimensions': [
+                        {
+                            'Name': 'Location',
+                            'Value': 'Cabinet'  # Location
+                        },
+                    ],
+                    'Unit': 'None',
+                    'Value': temperature_c,  # Send in Celsius
+                    'StorageResolution': 1
+                },
+                {
+                    'MetricName': 'Humidity',
+                    'Dimensions': [
+                        {
+                            'Name': 'Location',
+                            'Value': 'Cabinet'
+                        },
+                    ],
+                    'Unit': 'Percent',
+                    'Value': humidity,
+                    'StorageResolution': 1
+                },
+                {
+                    'MetricName': 'TemperatureF',
+                    'Dimensions': [
+                        {
+                            'Name': 'Location',
+                            'Value': 'Cabinet'  # Location
+                        },
+                    ],
+                    'Unit': 'None',
+                    'Value': temperature_f,  # Send in Fahrenheit
+                    'StorageResolution': 1
+                },
+            ]
         )
 
     except RuntimeError as error:
