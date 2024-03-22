@@ -4,6 +4,7 @@ import os
 import time
 import RPi.GPIO as GPIO
 import boto3
+import mimetypes
 
 # Set up GPIO mode
 GPIO.setmode(GPIO.BCM)
@@ -37,8 +38,13 @@ def get_next_image_filename():
 # Function to upload image to S3
 def upload_image_to_s3(image_filename):
     try:
+        mime_type, _ = mimetypes.guess_type(image_filename)
+        if mime_type:
+            extra_args = {'ContentType': mime_type}
+        else:
+            extra_args = {}
         with open(image_filename, 'rb') as f:
-            s3_client.upload_fileobj(f, bucket_name, f"captured_images/{os.path.basename(image_filename)}")
+            s3_client.upload_fileobj(f, bucket_name, f"captured_images/{os.path.basename(image_filename)}", ExtraArgs=extra_args)
         print(f"Image '{image_filename}' uploaded to S3 bucket '{bucket_name}/captured_images' successfully.")
     except Exception as e:
         print(f"Failed to upload image '{image_filename}' to S3 bucket '{bucket_name}/captured_images': {e}")
@@ -65,24 +71,25 @@ def ensure_log_file_exists():
 
 # Read voltage of GPIO18 and capture image if voltage is 1
 try:
+    image_captured = 0 # Initializing variable for image capture
     while True:
         voltage = GPIO.input(SENSOR_PIN)
 
         if voltage == 1:
             if not door_open:  # Door opened
                 door_open = True
-                if not image_captured:  # Capture image only once when door is opened
+                if image_captured == 0:  # Capture image only once when door is opened
                     ensure_img_folder_exists()
                     next_image_filename = get_next_image_filename()
                     os.system(f"libcamera-jpeg -n -o {next_image_filename} > /dev/null 2>&1")
                     upload_image_to_s3(next_image_filename)
                     os.remove(next_image_filename)  # Remove local image after upload to save space
-                    image_captured = True
+                    image_captured = 1 # Set image variable to 1 (image took)
                 log_door_activity("Door opened")
         else:
             if door_open:  # Door closed
                 door_open = False
-                image_captured = False
+                image_captured = 0 # Reset image variable to 0
                 log_door_activity("Door closed")
 
         time.sleep(0.5)  # Sleep for 0.5 seconds (half a second)
